@@ -1,0 +1,19 @@
+defaults:
+  - override hydra/launcher: slurmpilot
+
+hydra:
+  launcher:
+    # Set this to the slurmpilot cluster you have configured under
+    # ~/slurmpilot/config/clusters/<cluster>.yaml. Use "mock" to run jobs as
+    # local subprocesses for testing.
+    cluster: mock
+    partition: null
+    n_cpus: 1
+    max_runtime_minutes: 5
+    # On a real cluster set this to the cluster-side python (or null + a
+    # bash_setup_command that activates a venv). For local testing against
+    # cluster=mock you may want to override on the CLI:
+    #   hydra.launcher.python_binary=$PWD/.venv/bin/python
+    python_binary: python
+
+task: 1
