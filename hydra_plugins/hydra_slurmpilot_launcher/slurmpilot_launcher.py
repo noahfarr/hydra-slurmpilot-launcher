@@ -2,16 +2,17 @@ import logging
 import os
 import shlex
 import sys
+from collections.abc import Sequence
 from datetime import datetime
 from pathlib import Path
-from typing import Any, List, Optional, Sequence
+from typing import Any
 
 from hydra.core.utils import JobReturn, JobStatus, filter_overrides
 from hydra.plugins.launcher import Launcher
 from hydra.types import HydraContext, TaskFunction
 from omegaconf import DictConfig, OmegaConf
 
-log = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class SlurmPilotLauncher(Launcher):
@@ -33,9 +34,9 @@ class SlurmPilotLauncher(Launcher):
                 v = OmegaConf.to_container(v, resolve=True)
             self.params[k] = v
 
-        self.config: Optional[DictConfig] = None
-        self.task_function: Optional[TaskFunction] = None
-        self.hydra_context: Optional[HydraContext] = None
+        self.config: DictConfig | None = None
+        self.task_function: TaskFunction | None = None
+        self.hydra_context: HydraContext | None = None
 
     def setup(
         self,
@@ -70,12 +71,12 @@ class SlurmPilotLauncher(Launcher):
             for overrides in job_overrides
         ]
 
-        log.info(
+        logger.info(
             f"SlurmPilot sweep: {num_jobs} job(s) -> cluster '{cluster}', "
             f"src_dir={src_dir}, entrypoint={entrypoint}"
         )
         for idx, args in enumerate(formatted_args):
-            log.info(f"\t#{initial_job_idx + idx} : {args}")
+            logger.info(f"\t#{initial_job_idx + idx} : {args}")
 
         slurm = SlurmPilot(clusters=[cluster])
 
@@ -97,18 +98,14 @@ class SlurmPilotLauncher(Launcher):
             initial_job_idx,
         )
 
-    # ------------------------------------------------------------------ #
-    # Submission strategies
-    # ------------------------------------------------------------------ #
-
     def _launch_array(
         self,
         slurm: Any,
         jobname: str,
         src_dir: str,
         entrypoint: str,
-        formatted_args: List[str],
-    ) -> List[JobReturn]:
+        formatted_args: list[str],
+    ) -> list[JobReturn]:
         from slurmpilot import JobCreationInfo
 
         info = JobCreationInfo(
@@ -130,9 +127,10 @@ class SlurmPilotLauncher(Launcher):
             env=self.params["env"] or None,
             sbatch_arguments=self.params["sbatch_arguments"],
             remote_path=self.params["remote_path"],
+            ignore_patterns=self.params["ignore_patterns"],
         )
         jobid = slurm.schedule_job(info)
-        log.info(
+        logger.info(
             f"Submitted array job '{jobname}' to cluster "
             f"'{self.params['cluster']}' (slurm jobid={jobid}, "
             f"{len(formatted_args)} tasks)"
@@ -152,12 +150,12 @@ class SlurmPilotLauncher(Launcher):
         base_jobname: str,
         src_dir: str,
         entrypoint: str,
-        formatted_args: List[str],
+        formatted_args: list[str],
         initial_job_idx: int,
-    ) -> List[JobReturn]:
+    ) -> list[JobReturn]:
         from slurmpilot import JobCreationInfo
 
-        results: List[JobReturn] = []
+        results: list[JobReturn] = []
         for idx, args in enumerate(formatted_args):
             real_idx = initial_job_idx + idx
             jobname = f"{base_jobname}/{real_idx}"
@@ -179,9 +177,10 @@ class SlurmPilotLauncher(Launcher):
                 env=self.params["env"] or None,
                 sbatch_arguments=self.params["sbatch_arguments"],
                 remote_path=self.params["remote_path"],
+                ignore_patterns=self.params["ignore_patterns"],
             )
             jobid = slurm.schedule_job(info)
-            log.info(
+            logger.info(
                 f"Submitted '{jobname}' to cluster '{self.params['cluster']}' "
                 f"(slurm jobid={jobid})"
             )
@@ -189,10 +188,6 @@ class SlurmPilotLauncher(Launcher):
                 self._wait(slurm, jobname)
             results.append(self._make_return(jobname, jobid))
         return results
-
-    # ------------------------------------------------------------------ #
-    # Helpers
-    # ------------------------------------------------------------------ #
 
     def _resolve_src_dir(self) -> str:
         src_dir = self.params.get("src_dir") or os.getcwd()
@@ -215,10 +210,10 @@ class SlurmPilotLauncher(Launcher):
         state = slurm.wait_completion(
             jobname=jobname, max_seconds=self.params["wait_max_seconds"]
         )
-        log.info(f"Job '{jobname}' finished with state={state}")
+        logger.info(f"Job '{jobname}' finished with state={state}")
 
     def _make_return(
-        self, jobname: str, jobid: Optional[int], task_idx: Optional[int] = None
+        self, jobname: str, jobid: int | None, task_idx: int | None = None
     ) -> JobReturn:
         # Submission was successful — the job is now slurm's responsibility.
         # We can't recover the user task's actual return value from a remote

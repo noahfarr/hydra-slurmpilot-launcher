@@ -1,5 +1,4 @@
 from dataclasses import dataclass, field
-from typing import Dict, List, Optional
 
 from hydra.core.config_store import ConfigStore
 from omegaconf import MISSING
@@ -28,27 +27,27 @@ class SlurmPilotQueueConf:
 
     # Local source directory uploaded to the cluster.
     # null -> current working directory at launch time.
-    src_dir: Optional[str] = None
+    src_dir: str | None = None
 
     # Entrypoint path relative to src_dir. null -> inferred from sys.argv[0].
-    entrypoint: Optional[str] = None
+    entrypoint: str | None = None
 
     # Python interpreter on the cluster. Set to null to run the entrypoint
     # via bash instead.
-    python_binary: Optional[str] = "python"
+    python_binary: str | None = "python"
 
     # Extra local directories shipped to the cluster and added to PYTHONPATH.
-    python_libraries: Optional[List[str]] = None
+    python_libraries: list[str] | None = None
 
     # Shell command run before the entrypoint (e.g. "source ~/venv/bin/activate").
-    bash_setup_command: Optional[str] = None
+    bash_setup_command: str | None = None
 
     # If True, submit a single slurm array job covering every multirun task.
     # If False, submit one slurm job per task.
     array: bool = True
 
     # Max simultaneous array tasks (only when array=True).
-    n_concurrent_jobs: Optional[int] = None
+    n_concurrent_jobs: int | None = None
 
     # Block until each submitted job reaches a terminal state.
     wait: bool = False
@@ -57,17 +56,20 @@ class SlurmPilotQueueConf:
     wait_max_seconds: int = 3600
 
     # Slurm resource fields (mapped 1:1 onto slurmpilot.JobCreationInfo).
-    partition: Optional[str] = None
+    partition: str | None = None
     n_cpus: int = 1
-    n_gpus: Optional[int] = None
-    mem: Optional[int] = None  # MB
+    n_gpus: int | None = None
+    mem: int | None = None  # Memory in MB.
     max_runtime_minutes: int = 60
-    account: Optional[str] = None
-    env: Dict[str, str] = field(default_factory=dict)
+    account: str | None = None
+    env: dict[str, str] = field(default_factory=dict)
     # Raw extra sbatch flags as a single string, e.g. "--qos=high --nodes=2".
-    sbatch_arguments: Optional[str] = None
+    sbatch_arguments: str | None = None
     # Override the cluster's default remote_path.
-    remote_path: Optional[str] = None
+    remote_path: str | None = None
+    # Extra gitignore-style patterns merged on top of any .spignore files
+    # found at the root of src_dir and each python_libraries entry.
+    ignore_patterns: list[str] | None = None
 
 
 ConfigStore.instance().store(

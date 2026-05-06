@@ -22,6 +22,9 @@ dependencies = [
     "slurmpilot>=0.2.0",
 ]
 
+[tool.uv.sources]
+slurmpilot = { git = "https://github.com/noahfarr/slurmpilot.git", branch = "feat/spignore" }
+
 [project.optional-dependencies]
 dev = ["pytest>=8.0"]
 
