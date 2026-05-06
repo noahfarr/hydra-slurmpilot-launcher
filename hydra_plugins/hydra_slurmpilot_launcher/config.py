@@ -22,8 +22,17 @@ class SlurmPilotQueueConf:
     # ~/.ssh/config, or one of the special values "mock" / "local".
     cluster: str = MISSING
 
-    # Base jobname; each multirun job gets a unique suffix appended.
+    # Base jobname. A `YYYY-MM-DD_HH-MM-SS` timestamp is always appended for
+    # uniqueness; `unify_method` controls whether anything else is added.
     jobname: str = "${hydra.job.name}"
+
+    # Extra suffix appended after the timestamp to disambiguate sweeps that
+    # land in the same second. One of:
+    #   - null      no extra suffix; the timestamp alone must be unique
+    #   - "ascii"   random 5-char alphanumeric (e.g. "A3K9P")
+    #   - "coolname" 4-word slug (e.g. "fervent-enlightened-mule-of-fragrance")
+    #   - "date"    a second timestamp (redundant; included for completeness)
+    unify_method: str | None = None
 
     # Local source directory uploaded to the cluster.
     # null -> current working directory at launch time.

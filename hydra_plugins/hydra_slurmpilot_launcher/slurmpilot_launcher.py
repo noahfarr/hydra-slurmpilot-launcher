@@ -80,10 +80,11 @@ class SlurmPilotLauncher(Launcher):
 
         slurm = SlurmPilot(clusters=[cluster])
 
-        base_jobname = unify(
-            f"{self.params['jobname']}/{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}",
-            method="coolname",
+        base_jobname = (
+            f"{self.params['jobname']}/{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
         )
+        if self.params["unify_method"] is not None:
+            base_jobname = unify(base_jobname, method=self.params["unify_method"])
 
         if self.params["array"] and num_jobs > 1:
             return self._launch_array(

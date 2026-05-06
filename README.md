@@ -79,7 +79,8 @@ All keys live under `hydra.launcher`.
 | Key | Type | Default | Notes |
 |---|---|---|---|
 | `cluster` | `str` | **required** | Slurmpilot cluster name |
-| `jobname` | `str` | `${hydra.job.name}` | Base jobname; suffixed for uniqueness |
+| `jobname` | `str` | `${hydra.job.name}` | Base jobname; a `YYYY-MM-DD_HH-MM-SS` timestamp is always appended |
+| `unify_method` | `str?` | `null` | Extra suffix after the timestamp: `null` (none), `"ascii"`, `"coolname"`, or `"date"` |
 | `src_dir` | `str?` | cwd | Local dir uploaded to cluster |
 | `entrypoint` | `str?` | `sys.argv[0]` relative to `src_dir` | The script to run |
 | `python_binary` | `str?` | `"python"` | Set to `null` for bash entrypoints |
@@ -119,8 +120,9 @@ All keys live under `hydra.launcher`.
   task_idx, cluster) rather than the user task's actual return value, since
   there's no way to recover Python return values from a remote script.
 - **Jobnames must be unique** — slurmpilot raises if `~/slurmpilot/jobs/
-  <jobname>/` already exists locally. The launcher appends a `coolname` +
-  timestamp to avoid collisions.
+  <jobname>/` already exists locally. The launcher appends a
+  `YYYY-MM-DD_HH-MM-SS` timestamp; if you fire multiple sweeps within the
+  same second, set `unify_method` to add a random/coolname suffix.
 
 ## Example
 
