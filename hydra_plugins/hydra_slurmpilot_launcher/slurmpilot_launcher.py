@@ -128,7 +128,6 @@ class SlurmPilotLauncher(Launcher):
             env=self.params["env"] or None,
             sbatch_arguments=self.params["sbatch_arguments"],
             remote_path=self.params["remote_path"],
-            ignore_patterns=self.params["ignore_patterns"],
         )
         jobid = slurm.schedule_job(info)
         logger.info(
@@ -178,7 +177,6 @@ class SlurmPilotLauncher(Launcher):
                 env=self.params["env"] or None,
                 sbatch_arguments=self.params["sbatch_arguments"],
                 remote_path=self.params["remote_path"],
-                ignore_patterns=self.params["ignore_patterns"],
             )
             jobid = slurm.schedule_job(info)
             logger.info(

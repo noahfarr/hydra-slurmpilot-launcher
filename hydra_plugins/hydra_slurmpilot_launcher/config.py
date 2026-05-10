@@ -76,9 +76,6 @@ class SlurmPilotQueueConf:
     sbatch_arguments: str | None = None
     # Override the cluster's default remote_path.
     remote_path: str | None = None
-    # Extra gitignore-style patterns merged on top of any .spignore files
-    # found at the root of src_dir and each python_libraries entry.
-    ignore_patterns: list[str] | None = None
 
 
 ConfigStore.instance().store(
