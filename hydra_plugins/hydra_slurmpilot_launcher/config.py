@@ -72,8 +72,8 @@ class SlurmPilotQueueConf:
     max_runtime_minutes: int = 60
     account: str | None = None
     env: dict[str, str] = field(default_factory=dict)
-    # Raw extra sbatch flags as a single string, e.g. "--qos=high --nodes=2".
-    sbatch_arguments: str | None = None
+    # Raw extra sbatch flags, one per list item, e.g. ["--qos=high", "--nodes=2"].
+    sbatch_arguments: list[str] = field(default_factory=list)
     # Override the cluster's default remote_path.
     remote_path: str | None = None
 
